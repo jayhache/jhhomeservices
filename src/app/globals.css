@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+input,
+textarea,
+select {
+  @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition focus:border-brand-blue focus:ring-1 focus:ring-brand-blue;
+}
+
+button {
+  @apply inline-flex items-center justify-center rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+label {
+  @apply text-sm font-medium text-slate-700;
+}
+
