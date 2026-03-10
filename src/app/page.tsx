@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import QuoteForm from "../components/QuoteForm";
+import FaqSchema from "@/components/FaqSchema";
+
+export const metadata: Metadata = {
+  title:
+    "Handyman, Painting & Carpentry in Somerville, Medford & Cambridge",
+  description:
+    "John Henry Home Services LLC: interior & exterior painting, small remodels, trim carpentry, landscaping, gutter cleaning, drywall repairs. Serving Somerville, Medford, Cambridge and Greater Boston. Request a free quote.",
+};
 
 export default function HomePage() {
   return (
@@ -64,6 +73,9 @@ export default function HomePage() {
             <li>Boston, MA</li>
             <li>and nearby towns</li>
           </ul>
+          <p className="text-sm">
+            <a href="/areas" className="font-medium text-brand-blue hover:underline">View all service areas →</a>
+          </p>
         </section>
 
         <section className="space-y-3">
@@ -76,10 +88,50 @@ export default function HomePage() {
             like spring maintenance checklists, exterior painting prep, gutter
             cleaning, and getting your yard ready for the season.
           </p>
+          <p className="text-sm">
+            <a href="/articles" className="font-medium text-brand-blue hover:underline">Read our articles →</a>
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Frequently asked questions
+          </h2>
+          <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="font-medium text-slate-900">Do you offer free estimates?</dt>
+              <dd className="mt-0.5 text-slate-600">Yes. Use the quote form on this page or call or text (617) 863-7629 and we&apos;ll follow up with a written estimate at no charge.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-slate-900">What areas do you serve?</dt>
+              <dd className="mt-0.5 text-slate-600">We primarily serve Somerville, Medford and Cambridge, and also Belmont, Malden, Burlington, Boston and nearby Massachusetts towns.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-slate-900">What services do you offer?</dt>
+              <dd className="mt-0.5 text-slate-600">Interior and exterior painting, small remodeling, trim and door carpentry, landscaping, gutter cleaning, drywall repairs, furniture assembly, TV mounting, door and lock repairs, shelving and picture hanging, storm doors and screens, and more.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-slate-900">Are you insured?</dt>
+              <dd className="mt-0.5 text-slate-600">Yes. John Henry Home Services LLC is fully insured.</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-slate-900">How do I request a quote?</dt>
+              <dd className="mt-0.5 text-slate-600">Fill out the quote form on this page with your name, contact info and project details. We&apos;ll follow up with a written estimate.</dd>
+            </div>
+          </dl>
+          <FaqSchema
+            faqs={[
+              { question: "Do you offer free estimates?", answer: "Yes. Use the quote form on this page or call or text (617) 863-7629 and we'll follow up with a written estimate at no charge." },
+              { question: "What areas do you serve?", answer: "We primarily serve Somerville, Medford and Cambridge, and also Belmont, Malden, Burlington, Boston and nearby Massachusetts towns." },
+              { question: "What services do you offer?", answer: "Interior and exterior painting, small remodeling, trim and door carpentry, landscaping, gutter cleaning, drywall repairs, furniture assembly, TV mounting, door and lock repairs, shelving and picture hanging, storm doors and screens, and more." },
+              { question: "Are you insured?", answer: "Yes. John Henry Home Services LLC is fully insured." },
+              { question: "How do I request a quote?", answer: "Fill out the quote form on this page with your name, contact info and project details. We'll follow up with a written estimate." },
+            ]}
+          />
         </section>
       </section>
 
-      <aside className="md:pl-6">
+      <aside className="md:pl-6" id="quote">
         <div className="sticky top-4 rounded-xl bg-white p-5 shadow-md">
           <h2 className="text-lg font-semibold text-slate-900">
             Request a free quote

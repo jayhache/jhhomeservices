@@ -1,5 +1,4 @@
-import PDFDocument from "pdfkit";
-import type { Readable } from "stream";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export type QuotePayload = {
   name: string;
@@ -15,89 +14,100 @@ export type QuotePayload = {
 export async function generateQuotePdf(
   payload: QuotePayload
 ): Promise<Buffer> {
-  const doc = new PDFDocument({ margin: 50 });
-  const chunks: Buffer[] = [];
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
 
-  return new Promise((resolve, reject) => {
-    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(chunks)));
-    doc.on("error", reject);
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    doc
-      .fontSize(20)
-      .fillColor("#1E3A8A")
-      .text("John Henry Home Services LLC", { align: "left" });
+  const margin = 50;
+  let y = 800;
 
-    doc
-      .moveDown(0.5)
-      .fontSize(10)
-      .fillColor("#444")
-      .text("Fully insured handyman, painting & small projects", {
-        align: "left"
-      })
-      .text("Serving Somerville, Medford, Cambridge & nearby towns in MA");
+  const drawText = (
+    text: string,
+    options: { bold?: boolean; size?: number; color?: [number, number, number] } = {}
+  ) => {
+    const size = options.size ?? 11;
+    const font = options.bold ? fontBold : fontRegular;
+    const color = options.color ? rgb(...options.color) : rgb(0, 0, 0);
 
-    doc
-      .moveDown()
-      .fontSize(12)
-      .fillColor("#000")
-      .text("Quote Request Summary", { underline: true });
+    const textWidth = font.widthOfTextAtSize(text, size);
+    const maxWidth = page.getWidth() - margin * 2;
 
-    doc
-      .moveDown()
-      .fontSize(10)
-      .text(`Name: ${payload.name}`)
-      .text(`Email: ${payload.email}`)
-      .text(`Phone: ${payload.phone}`)
-      .text(`City: ${payload.city}`)
-      .text(`Service type: ${payload.serviceType}`)
-      .text(
-        `Preferred timing: ${
-          payload.preferredTiming || "Not specified"
-        }`
-      )
-      .text(`Budget: ${payload.budget || "Not specified"}`);
+    if (textWidth <= maxWidth) {
+      page.drawText(text, { x: margin, y, size, font, color });
+      y -= size + 4;
+    } else {
+      const words = text.split(" ");
+      let line = "";
+      for (const word of words) {
+        const testLine = line ? `${line} ${word}` : word;
+        const testWidth = font.widthOfTextAtSize(testLine, size);
+        if (testWidth > maxWidth) {
+          page.drawText(line, { x: margin, y, size, font, color });
+          y -= size + 4;
+          line = word;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line) {
+        page.drawText(line, { x: margin, y, size, font, color });
+        y -= size + 4;
+      }
+    }
+  };
 
-    doc.moveDown().fontSize(11).text("Project details:", { underline: true });
-    doc.moveDown().fontSize(10).text(payload.details, {
-      width: 500
-    });
-
-    doc.moveDown().fontSize(11).text("Estimate notes:", { underline: true });
-    doc
-      .moveDown(0.5)
-      .fontSize(9)
-      .fillColor("#555")
-      .text(
-        "This PDF is a draft template for your internal use. No pricing has been set yet. " +
-          "After reviewing the project details and, if needed, visiting the property, " +
-          "you will send the client a formal written estimate with pricing and terms.",
-        { width: 500 }
-      );
-
-    doc.moveDown().fontSize(9).text("Internal checklist:", { underline: true });
-    doc
-      .moveDown(0.5)
-      .circle(60, doc.y + 4, 2)
-      .fill("#1E3A8A")
-      .fillColor("#000")
-      .text(" Visit site / confirm scope", 70, doc.y - 4);
-
-    doc
-      .moveDown(0.5)
-      .circle(60, doc.y + 4, 2)
-      .fill("#1E3A8A")
-      .fillColor("#000")
-      .text(" Confirm materials & lead time", 70, doc.y - 4);
-
-    doc
-      .moveDown(0.5)
-      .circle(60, doc.y + 4, 2)
-      .fill("#1E3A8A")
-      .fillColor("#000")
-      .text(" Prepare and send written estimate", 70, doc.y - 4);
-
-    doc.end();
+  // Header
+  drawText("John Henry Home Services LLC", {
+    bold: true,
+    size: 18,
+    color: [0.118, 0.227, 0.541]
   });
+  drawText("Fully insured handyman, painting & small projects", {
+    size: 10,
+    color: [0.267, 0.267, 0.267]
+  });
+  drawText("Serving Somerville, Medford, Cambridge & nearby towns in MA", {
+    size: 10,
+    color: [0.267, 0.267, 0.267]
+  });
+
+  y -= 10;
+  drawText("Quote Request Summary", { bold: true, size: 12 });
+
+  y -= 4;
+  drawText(`Name: ${payload.name}`, { size: 10 });
+  drawText(`Email: ${payload.email}`, { size: 10 });
+  drawText(`Phone: ${payload.phone}`, { size: 10 });
+  drawText(`City: ${payload.city}`, { size: 10 });
+  drawText(`Service type: ${payload.serviceType}`, { size: 10 });
+  drawText(
+    `Preferred timing: ${payload.preferredTiming || "Not specified"}`,
+    { size: 10 }
+  );
+  drawText(`Budget: ${payload.budget || "Not specified"}`, { size: 10 });
+
+  y -= 6;
+  drawText("Project details:", { bold: true, size: 11 });
+  drawText(payload.details, { size: 10 });
+
+  y -= 6;
+  drawText("Estimate notes:", { bold: true, size: 11 });
+  drawText(
+    "This PDF is a draft template for your internal use. No pricing has been set yet. " +
+      "After reviewing the project details and, if needed, visiting the property, " +
+      "you will send the client a formal written estimate with pricing and terms.",
+    { size: 9, color: [0.333, 0.333, 0.333] }
+  );
+
+  y -= 6;
+  drawText("Internal checklist:", { bold: true, size: 10 });
+  drawText("• Visit site / confirm scope", { size: 9 });
+  drawText("• Confirm materials & lead time", { size: 9 });
+  drawText("• Prepare and send written estimate", { size: 9 });
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
 }
 
